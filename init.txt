@@ -1,0 +1,83 @@
+resto-rest-api/
+├── src/
+│   ├── app.module.ts              # Root module (Config TypeORM & Static Files)
+│   ├── main.ts                    # Entry point & Global Validation Pipe
+│   │
+│   ├── common/                    # Shared logic & Security
+│   │   ├── decorators/
+│   │   │   ├── get-user.decorator.ts    # Ambil data user dari payload JWT
+│   │   │   └── roles.decorator.ts       # Set metadata role (misal: @Roles('ADMIN'))
+│   │   ├── guards/
+│   │   │   ├── jwt-auth.guard.ts        # Cek apakah token JWT valid
+│   │   │   └── roles.guard.ts           # Cek apakah user punya role SUPER_ADMIN
+│   │   └── enums/
+│   │       └── role.enum.ts             # Enum: SUPER_ADMIN, STAFF
+│   │
+│   ├── modules/
+│   │   ├── auth/                  # Sistem Login & Token
+│   │   │   ├── auth.module.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── dto/
+│   │   │   │   └── login.dto.ts
+│   │   │   └── strategies/
+│   │   │       └── jwt.strategy.ts      # Verifikasi token JWT
+│   │   │
+│   │   ├── menu/                  # CRUD Makanan & Minuman
+│   │   │   ├── menu.module.ts
+│   │   │   ├── menu.controller.ts       # Handle Upload & CRUD
+│   │   │   ├── menu.service.ts          # Logic stok & manipulasi data
+│   │   │   ├── entities/
+│   │   │   │   └── menu.entity.ts       # TypeORM Entity (Postgres)
+│   │   │   └── dto/
+│   │   │       ├── create-menu.dto.ts   # Validasi input menu & stok
+│   │   │       └── update-menu.dto.ts
+│   │   │
+│   │   └── users/                 # Manajemen User/Admin
+│   │       ├── users.module.ts
+│   │       ├── users.service.ts
+│   │       └── entities/
+│   │           └── user.entity.ts       # Entity User (Role, Username, Password)
+│   │
+│   └── shared/                    # Utility khusus upload
+│       └── file-upload.utils.ts   # Helper untuk filter tipe file gambar
+│
+├── uploads/                       # Folder penyimpanan fisik gambar
+│   └── menu/                      # File foto makanan/minuman ada di sini
+│
+├── .env                           # DB_URL, JWT_SECRET, PORT
+├── .gitignore                     # Pastikan /uploads & .env tidak ter-push ke git
+├── nest-cli.json
+├── package.json
+└── tsconfig.json
+
+🚀 Bagian 1: Inisialisasi Project
+📋 Bagian 2: Daftar Detail Step Sampai Selesai
+	Berikut adalah roadmap pengerjaan kita. Kita akan eksekusi satu per satu setelah bos konfirmasi setiap tahapnya:
+	
+	Tahap 1: Pondasi & Database (The Foundation)
+		Setup .env untuk koneksi PostgreSQL.
+		Konfigurasi AppModule untuk menghubungkan TypeORM.
+		Setup main.ts (Global Prefix, Validation Pipe, dan Static Folder).
+		Membuat Role Enum (SUPER_ADMIN, STAFF).
+	
+	Tahap 2: Manajemen User (User Identity)
+		Membuat User Entity (ID, Username, Password, Role).
+		Membuat UsersService untuk logika pencarian dan pembuatan user (Admin).
+		Membuat Initial Seeder (Script otomatis buat akun Super Admin pertama kali).
+	
+	Tahap 3: Keamanan & Autentikasi (The Gatekeeper)
+		Implementasi Bcrypt untuk hash password.
+		Setup JwtStrategy untuk validasi token.
+		Membuat AuthService untuk logika login (Username + Password -> JWT).
+		Membuat AuthGuard dan RolesGuard (Proteksi khusus Super Admin).
+	
+	Tahap 4: Modul Menu (Core Business)
+		Membuat Menu Entity (Nama, Harga, Stok, Kategori FOOD/DRINK, Image Path).
+		Membuat CRUD Menu di MenuService.
+		Integrasi Multer di MenuController untuk Image Upload.
+		Validasi input menggunakan DTO (Data Transfer Object).
+	
+	Tahap 5: Testing & Finishing
+		Uji coba endpoint via Postman/Insomnia.
+		Memastikan relasi data dan proteksi role berjalan (User biasa tidak bisa hapus menu).
