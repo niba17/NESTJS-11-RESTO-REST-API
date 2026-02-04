@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -30,8 +31,9 @@ export class UsersController {
   @Roles(Role.SUPER_ADMIN)
   async updateRole(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('role') role: Role,
+    @Body() updateRoleDto: UpdateUserRoleDto, // Gunakan DTO di sini
   ) {
-    return this.usersService.updateRole(id, role);
+    // Ambil role dari object DTO
+    return this.usersService.updateRole(id, updateRoleDto.role);
   }
 }

@@ -1,15 +1,15 @@
 import {
   Injectable,
-  NotFoundException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource } from 'typeorm'; // Hapus 'Repository' karena tidak dipakai
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Menu } from '../menu/entities/menu.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { User } from '../users/entities/user.entity';
-import { OrderStatus } from './enums/order-status.enum';
+import { OrderStatus } from './enums/order-status.enum'; // FIX: Sesuaikan path (pakai ./ bukan ../)
 
 @Injectable()
 export class OrdersRepository {
@@ -27,80 +27,76 @@ export class OrdersRepository {
       let totalAmount = 0;
       const orderItems: OrderItem[] = [];
 
-      for (const item of createOrderDto.items) {
+      for (const itemDto of createOrderDto.items) {
         const menu = await queryRunner.manager.findOne(Menu, {
-          where: { id: item.menuId },
+          where: { id: itemDto.menuId },
+          lock: { mode: 'pessimistic_write' },
         });
 
-        if (!menu) {
+        if (!menu)
           throw new NotFoundException(
-            `Menu dengan ID ${item.menuId} tidak ditemukan, Bos!`,
+            `Menu ${itemDto.menuId} tidak ditemukan!`,
           );
-        }
-
-        if (menu.stock < item.quantity) {
+        if (menu.stock < itemDto.quantity) {
           throw new BadRequestException(
-            `Stok ${menu.name} tidak cukup. Sisa: ${menu.stock}`,
+            `Stok ${menu.name} tidak cukup (Sisa: ${menu.stock})`,
           );
         }
 
-        // Logic kurangi stok & snapshot harga
-        menu.stock -= item.quantity;
+        // Update Stok
+        menu.stock -= itemDto.quantity;
         await queryRunner.manager.save(menu);
 
         const orderItem = new OrderItem();
         orderItem.menu = menu;
-        orderItem.quantity = item.quantity;
+        orderItem.quantity = itemDto.quantity;
         orderItem.price = menu.price;
-
-        totalAmount += menu.price * item.quantity;
         orderItems.push(orderItem);
+
+        totalAmount += Number(menu.price) * itemDto.quantity;
       }
 
       const order = new Order();
       order.user = user;
       order.items = orderItems;
       order.totalAmount = totalAmount;
+      order.status = OrderStatus.PENDING;
 
       const savedOrder = await queryRunner.manager.save(order);
 
       await queryRunner.commitTransaction();
       return savedOrder;
     } catch (err) {
+      // Rollback jika ada yang gagal
       await queryRunner.rollbackTransaction();
-      throw err;
+      throw err; // Lempar kembali error aslinya
     } finally {
+      // Pastikan koneksi dilepas kembali ke pool
       await queryRunner.release();
     }
   }
 
-  async updateStatus(id: string, status: OrderStatus): Promise<Order> {
-    const order = await this.dataSource
-      .getRepository(Order)
-      .findOne({ where: { id } });
-
-    if (!order) {
-      throw new NotFoundException(`Order dengan ID ${id} tidak ditemukan.`);
-    }
-
-    order.status = status;
-    return this.dataSource.getRepository(Order).save(order);
-  }
-
-  // Method bantuan untuk query biasa
   async findAllOrders(): Promise<Order[]> {
-    // Kita pakai manager agar konsisten, atau bisa inject Repository<Order> standar juga
     return this.dataSource.getRepository(Order).find({
-      relations: ['items', 'items.menu', 'user'],
+      relations: ['user', 'items', 'items.menu'],
       order: { createdAt: 'DESC' },
     });
   }
 
   async findOrdersByUser(userId: string): Promise<Order[]> {
     return this.dataSource.getRepository(Order).find({
-      where: { user: { id: userId } }, // Filter berdasarkan ID User
+      where: { user: { id: userId } },
       relations: ['items', 'items.menu'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async updateStatus(id: string, status: OrderStatus): Promise<Order> {
+    const repo = this.dataSource.getRepository(Order);
+    const order = await repo.findOne({ where: { id } });
+    if (!order) throw new NotFoundException('Pesanan tidak ditemukan!');
+
+    order.status = status;
+    return repo.save(order);
   }
 }
