@@ -3,13 +3,16 @@ import { CreateMenuDto } from '../dto/create-menu.dto';
 import { UpdateMenuDto } from '../dto/update-menu.dto';
 
 export interface IMenuService {
-  create(createMenuDto: CreateMenuDto, imagePath: string): Promise<Menu>;
+  create(
+    createMenuDto: CreateMenuDto,
+    file?: Express.Multer.File,
+  ): Promise<Menu>;
   findAll(search?: string, category?: string): Promise<Menu[]>;
   findOne(id: string): Promise<Menu>;
   update(
     id: string,
     updateMenuDto: UpdateMenuDto,
-    imagePath?: string,
+    file?: Express.Multer.File,
   ): Promise<Menu>;
   remove(id: string): Promise<void>;
 }

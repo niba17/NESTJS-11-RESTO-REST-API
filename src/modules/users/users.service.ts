@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Role } from '../../common/enums/role.enum';
-import { UsersRepository } from './users.repository'; // Pakai Repo kita
+import { UsersRepository } from './users.repository';
+import { IUsersService } from './interfaces/users-service.interface';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UsersService implements OnModuleInit {
+export class UsersService implements OnModuleInit, IUsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async onModuleInit() {
@@ -14,7 +15,6 @@ export class UsersService implements OnModuleInit {
 
   async seedAdmin() {
     const adminExists = await this.usersRepository.findSuperAdmin();
-
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await this.usersRepository.save({
@@ -35,12 +35,16 @@ export class UsersService implements OnModuleInit {
     });
   }
 
-  async findOne(username: string): Promise<User | null> {
+  async findOneByUsername(username: string): Promise<User | null> {
     return this.usersRepository.findByUsername(username);
   }
 
-  async findById(id: string): Promise<User | null> {
-    return this.usersRepository.findById(id);
+  async findById(id: string): Promise<User> {
+    const user = await this.usersRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException(`User dengan ID ${id} tidak ditemukan, Bos!`);
+    }
+    return user;
   }
 
   async findOneWithPassword(username: string): Promise<User | null> {
@@ -52,11 +56,7 @@ export class UsersService implements OnModuleInit {
   }
 
   async updateRole(id: string, role: Role): Promise<User> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException(`User dengan ID ${id} tidak ditemukan, Bos!`);
-    }
-
+    const user = await this.findById(id); // Sudah menghandle throw NotFoundException
     user.role = role;
     return this.usersRepository.save(user);
   }

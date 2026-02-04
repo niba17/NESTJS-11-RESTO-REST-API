@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import {
   Controller,
   Post,
@@ -10,23 +9,19 @@ import {
   UploadedFile,
   UseGuards,
   Patch,
-  BadRequestException,
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { Request } from 'express';
-import 'multer';
-
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
+import { UpdateMenuDto } from './dto/update-menu.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
-import { UpdateMenuDto } from './dto/update-menu.dto';
+import { fileUploadConfig } from './config/multer.config';
+import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 
 @Controller('menu')
 export class MenuController {
@@ -35,89 +30,25 @@ export class MenuController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/menu',
-        filename: (
-          req: Request,
-          file: Express.Multer.File,
-          cb: (error: Error | null, filename: string) => void,
-        ) => {
-          const name = Date.now().toString();
-          const ext = extname(file.originalname);
-          cb(null, `${name}${ext}`);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          return cb(
-            new BadRequestException('Only jpg, jpeg, png & webp allowed'),
-            false,
-          );
-        }
-        cb(null, true);
-      },
-      limits: {
-        fileSize: 2 * 1024 * 1024,
-      },
-    }),
-  )
+  // Tambahkan as MulterOptions jika ESLint masih cerewet
+  @UseInterceptors(FileInterceptor('image', fileUploadConfig as MulterOptions))
   async create(
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() createMenuDto: CreateMenuDto,
-  ): Promise<any> {
-    const filename = file?.filename ? String(file.filename) : '';
-    const imagePath = filename ? `/uploads/menu/${filename}` : '';
-    return this.menuService.create(createMenuDto, imagePath);
+  ) {
+    return this.menuService.create(createMenuDto, file);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/menu',
-        filename: (req, file, cb) => {
-          const name = Date.now().toString();
-          const ext = extname(file.originalname);
-          cb(null, `${name}${ext}`);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          return cb(
-            new BadRequestException('Only jpg, jpeg, png & webp allowed'),
-            false,
-          );
-        }
-        cb(null, true);
-      },
-      limits: {
-        fileSize: 2 * 1024 * 1024,
-      },
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', fileUploadConfig as MulterOptions))
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() updateMenuDto: UpdateMenuDto,
   ) {
-    let imagePath: string | undefined = undefined;
-
-    // --- LOGIKA ANTI DUPLIKASI ---
-    if (file) {
-      // Jika file ada tapi ukurannya 0 (file hantu dari browser/postman)
-      if (file.size === 0) {
-        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-        imagePath = undefined;
-      } else {
-        imagePath = `/uploads/menu/${file.filename}`;
-      }
-    }
-
-    return this.menuService.update(id, updateMenuDto, imagePath);
+    return this.menuService.update(id, updateMenuDto, file);
   }
 
   @Get()
@@ -128,13 +59,16 @@ export class MenuController {
     return this.menuService.findAll(search, category);
   }
 
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.menuService.findOne(id);
+  }
+
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    // Tambahkan juga di sini!
     await this.menuService.remove(id);
-    return {
-      message: `Menu deleted successfully`,
-    };
+    return { message: 'Menu deleted successfully' };
   }
 }

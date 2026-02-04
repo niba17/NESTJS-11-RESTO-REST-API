@@ -19,13 +19,15 @@ export class AuthService implements IAuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<User> {
-    // 1. Delegasi pengecekan username ke UsersService (Logic Domain)
-    const existingUser = await this.usersService.findOne(registerDto.username);
+    // FIX: Ubah dari findOne ke findOneByUsername sesuai Interface IUsersService
+    const existingUser = await this.usersService.findOneByUsername(
+      registerDto.username,
+    );
+
     if (existingUser) {
       throw new ConflictException('Username sudah dipakai orang lain, Bos!');
     }
 
-    // 2. Delegasi pembuatan user ke UsersService (Logic Domain)
     return this.usersService.create(registerDto.username, registerDto.password);
   }
 

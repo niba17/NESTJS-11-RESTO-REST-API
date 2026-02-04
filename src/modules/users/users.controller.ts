@@ -6,7 +6,6 @@ import {
   Body,
   UseGuards,
   ParseUUIDPipe,
-  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -26,13 +25,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  // Tambah Endpoint Detail User: Untuk melihat data 1 orang
   @Get(':id')
   @Roles(Role.SUPER_ADMIN)
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const user = await this.usersService.findById(id);
-    if (!user) throw new NotFoundException('User tidak ditemukan, Bos!');
-    return user;
+    // Logika NotFound sudah ada di dalam service
+    return this.usersService.findById(id);
   }
 
   @Patch(':id/role')
