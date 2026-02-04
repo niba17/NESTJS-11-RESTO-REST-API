@@ -36,4 +36,10 @@ export class UsersRepository {
       .where('user.username = :username', { username })
       .getOne();
   }
+
+  async findAll(): Promise<User[]> {
+    return this.repository.find({
+      order: { username: 'ASC' },
+    });
+  }
 }

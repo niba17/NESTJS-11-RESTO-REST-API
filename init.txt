@@ -52,33 +52,33 @@ resto-rest-api/
 └── tsconfig.json
 
 
-1. Pondasi & Autentikasi
+1.Pondasi & Autentikasi
 	[x] Inisialisasi Project NestJS
 	[x] Koneksi Database (PostgreSQL/TypeORM)
 	[x] Setup Git & GitHub Repository
 	[x] Fitur Login (JWT Strategy)
 	[x] Role-based Access Control (Admin vs User)
-	[ ] Fitur Registrasi User Baru (Public)
+	[ ] Fitur Registrasi User Baru (Public) — Next Priority
 
-2. Manajemen Menu (Modul Menu)
+2. Manajemen Menu
 	[x] CRUD Menu (Create, Read, Update, Delete)
 	[x] Integrasi Upload Gambar (Multer)
 	[x] Filter Tipe File & Limit Ukuran Gambar
 	[x] Logika Hapus Fisik File saat Hapus/Update Menu
 	[x] Proteksi File Duplikat (0-byte cleaner)
-	[x] Penanganan Error ESLint & TypeScript (Clean Code)
-	[ ] Konfigurasi Static Assets (Agar gambar bisa diakses URL) <-- Prioritas Berikutnya
-	[ ] Fitur Search & Pagination Menu
+	[x] Penanganan Clean Code (ESLint & TS)
+	[x] Konfigurasi Static Assets (Sudah kita set di main.ts)
+	[x] Fitur Search & Filter Menu (Sudah ada di MenuRepository)
+	[ ] Pagination Menu — Opsional tapi bagus buat performa
 
 3. Sistem Pesanan (Modul Order)
-	[ ] Skema Database Order & Order Items
-	[ ] Fitur Buat Pesanan (Checkout)
-	[ ] Logika Pengurangan Stok Otomatis
-	[ ] Update Status Pesanan (Pending/Cooking/Done)
-	[ ] Riwayat Pesanan per User
+	[x] Skema Database Order & Order Items
+	[x] Fitur Buat Pesanan (Checkout)
+	[x] Logika Pengurangan Stok Otomatis (Transaction ✅)
+	[x] Update Status Pesanan (Pending/Cooking/Done)
+	[x] Riwayat Pesanan per User (GET /orders/my)
 
-4. Finishing & Deployment
-	[ ] Validasi Input Global (ValidationPipe)
-	[ ] Environment Variables (.env) untuk Produksi
+4. Finishing
+	[x] Validasi Input Global (Sudah ada di main.ts)
+	[ ] Environment Variables (.env)
 	[ ] Dokumentasi API (Swagger)
-	[ ] Deployment ke Server/Cloud

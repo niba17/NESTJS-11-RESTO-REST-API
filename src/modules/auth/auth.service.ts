@@ -1,8 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { IAuthService } from './interfaces/auth-service.interface';
 import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -10,6 +15,23 @@ export class AuthService implements IAuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async register(registerDto: RegisterDto) {
+    // 1. Cek apakah username sudah ada
+    const existingUser = await this.usersService.findOne(registerDto.username);
+    if (existingUser) {
+      throw new ConflictException('Username sudah dipakai orang lain, Bos!');
+    }
+
+    // 2. Buat user baru
+    const user = await this.usersService.create(
+      registerDto.username,
+      registerDto.password,
+    );
+
+    // 3. Kembalikan data user (tanpa password karena @Exclude sudah aktif)
+    return user;
+  }
 
   async login(username: string, pass: string) {
     // 1. Gunakan method baru yang bisa melihat password
