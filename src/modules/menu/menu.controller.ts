@@ -11,6 +11,7 @@ import {
   UseGuards,
   Patch,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -119,8 +120,11 @@ export class MenuController {
   }
 
   @Get()
-  async findAll() {
-    return this.menuService.findAll();
+  async findAll(
+    @Query('search') search?: string,
+    @Query('category') category?: string,
+  ) {
+    return this.menuService.findAll(search, category);
   }
 
   @Delete(':id')

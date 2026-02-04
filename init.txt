@@ -51,33 +51,34 @@ resto-rest-api/
 ├── package.json
 └── tsconfig.json
 
-🚀 Bagian 1: Inisialisasi Project
-📋 Bagian 2: Daftar Detail Step Sampai Selesai
-	Berikut adalah roadmap pengerjaan kita. Kita akan eksekusi satu per satu setelah bos konfirmasi setiap tahapnya:
-	
-	Tahap 1: Pondasi & Database (The Foundation)
-		Setup .env untuk koneksi PostgreSQL.
-		Konfigurasi AppModule untuk menghubungkan TypeORM.
-		Setup main.ts (Global Prefix, Validation Pipe, dan Static Folder).
-		Membuat Role Enum (SUPER_ADMIN, STAFF).
-	
-	Tahap 2: Manajemen User (User Identity)
-		Membuat User Entity (ID, Username, Password, Role).
-		Membuat UsersService untuk logika pencarian dan pembuatan user (Admin).
-		Membuat Initial Seeder (Script otomatis buat akun Super Admin pertama kali).
-	
-	Tahap 3: Keamanan & Autentikasi (The Gatekeeper)
-		Implementasi Bcrypt untuk hash password.
-		Setup JwtStrategy untuk validasi token.
-		Membuat AuthService untuk logika login (Username + Password -> JWT).
-		Membuat AuthGuard dan RolesGuard (Proteksi khusus Super Admin).
-	
-	Tahap 4: Modul Menu (Core Business)
-		Membuat Menu Entity (Nama, Harga, Stok, Kategori FOOD/DRINK, Image Path).
-		Membuat CRUD Menu di MenuService.
-		Integrasi Multer di MenuController untuk Image Upload.
-		Validasi input menggunakan DTO (Data Transfer Object).
-	
-	Tahap 5: Testing & Finishing
-		Uji coba endpoint via Postman/Insomnia.
-		Memastikan relasi data dan proteksi role berjalan (User biasa tidak bisa hapus menu).
+
+1. Pondasi & Autentikasi
+	[x] Inisialisasi Project NestJS
+	[x] Koneksi Database (PostgreSQL/TypeORM)
+	[x] Setup Git & GitHub Repository
+	[x] Fitur Login (JWT Strategy)
+	[x] Role-based Access Control (Admin vs User)
+	[ ] Fitur Registrasi User Baru (Public)
+
+2. Manajemen Menu (Modul Menu)
+	[x] CRUD Menu (Create, Read, Update, Delete)
+	[x] Integrasi Upload Gambar (Multer)
+	[x] Filter Tipe File & Limit Ukuran Gambar
+	[x] Logika Hapus Fisik File saat Hapus/Update Menu
+	[x] Proteksi File Duplikat (0-byte cleaner)
+	[x] Penanganan Error ESLint & TypeScript (Clean Code)
+	[ ] Konfigurasi Static Assets (Agar gambar bisa diakses URL) <-- Prioritas Berikutnya
+	[ ] Fitur Search & Pagination Menu
+
+3. Sistem Pesanan (Modul Order)
+	[ ] Skema Database Order & Order Items
+	[ ] Fitur Buat Pesanan (Checkout)
+	[ ] Logika Pengurangan Stok Otomatis
+	[ ] Update Status Pesanan (Pending/Cooking/Done)
+	[ ] Riwayat Pesanan per User
+
+4. Finishing & Deployment
+	[ ] Validasi Input Global (ValidationPipe)
+	[ ] Environment Variables (.env) untuk Produksi
+	[ ] Dokumentasi API (Swagger)
+	[ ] Deployment ke Server/Cloud

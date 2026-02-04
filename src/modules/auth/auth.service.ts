@@ -1,19 +1,21 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service'; // Pastikan path ini benar
+import { UsersService } from '../users/users.service';
+import { IAuthService } from './interfaces/auth-service.interface';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements IAuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async login(username: string, pass: string) {
-    const user = await this.usersService.findOne(username);
+    // 1. Gunakan method baru yang bisa melihat password
+    const user = await this.usersService.findOneWithPassword(username);
 
-    // Gunakan optional chaining atau pengecekan eksplisit
+    // 2. Sekarang user.password sudah ada isinya, bcrypt bisa bekerja
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       const payload = {
         username: user.username,
@@ -29,13 +31,9 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    const user = await this.usersService.findOne(userId);
-    if (user) {
-      const result = { ...user };
-      // @ts-expect-error: password might be private but we need to remove it
-      delete result.password;
-      return result;
-    }
-    return null;
+    // 4. Langsung kembalikan objek User.
+    // ClassSerializerInterceptor akan otomatis membuang password
+    // karena ada @Exclude() di Entity User.
+    return this.usersService.findById(userId);
   }
 }
