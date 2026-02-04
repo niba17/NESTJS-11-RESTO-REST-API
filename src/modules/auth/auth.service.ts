@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -57,6 +58,15 @@ export class AuthService implements IAuthService {
   }
 
   async getProfile(userId: string): Promise<User | null> {
-    return this.usersService.findById(userId);
+    const user = await this.usersService.findById(userId);
+
+    // Standarisasi: Jangan biarkan mengembalikan null, lempar Exception!
+    if (!user) {
+      throw new NotFoundException(
+        'Akun Bos tidak ditemukan, silakan login ulang.',
+      );
+    }
+
+    return user;
   }
 }

@@ -8,15 +8,6 @@ import * as bcrypt from 'bcrypt';
 export class UsersService implements OnModuleInit {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  async create(username: string, pass: string): Promise<User> {
-    const hashedPassword = await bcrypt.hash(pass, 10);
-    return this.usersRepository.save({
-      username,
-      password: hashedPassword,
-      role: Role.USER, // Default pendaftar baru adalah USER biasa
-    });
-  }
-
   async onModuleInit() {
     await this.seedAdmin();
   }
@@ -33,6 +24,15 @@ export class UsersService implements OnModuleInit {
       });
       console.log('✅ Akun Super Admin berhasil dibuat: superadmin / admin123');
     }
+  }
+
+  async create(username: string, pass: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(pass, 10);
+    return this.usersRepository.save({
+      username,
+      password: hashedPassword,
+      role: Role.USER,
+    });
   }
 
   async findOne(username: string): Promise<User | null> {

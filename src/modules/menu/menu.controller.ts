@@ -12,6 +12,7 @@ import {
   Patch,
   BadRequestException,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -99,7 +100,7 @@ export class MenuController {
     }),
   )
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() updateMenuDto: UpdateMenuDto,
   ) {
@@ -128,8 +129,9 @@ export class MenuController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard) // Harus login dulu
-  async remove(@Param('id') id: string) {
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    // Tambahkan juga di sini!
     await this.menuService.remove(id);
     return {
       message: `Menu deleted successfully`,

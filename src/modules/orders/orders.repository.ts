@@ -76,6 +76,13 @@ export class OrdersRepository {
     }
   }
 
+  async findById(id: string): Promise<Order | null> {
+    return this.dataSource.getRepository(Order).findOne({
+      where: { id },
+      relations: ['user', 'items', 'items.menu'],
+    });
+  }
+
   async findAllOrders(): Promise<Order[]> {
     return this.dataSource.getRepository(Order).find({
       relations: ['user', 'items', 'items.menu'],
@@ -93,7 +100,7 @@ export class OrdersRepository {
 
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const repo = this.dataSource.getRepository(Order);
-    const order = await repo.findOne({ where: { id } });
+    const order = await this.findById(id); // Gunakan findById agar relasi terbawa
     if (!order) throw new NotFoundException('Pesanan tidak ditemukan!');
 
     order.status = status;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IOrdersService } from './interfaces/orders-service.interface'; // Import Interface
 import { OrdersRepository } from './orders.repository'; // Import Repository Baru
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -8,18 +8,20 @@ import { OrderStatus } from './enums/order-status.enum';
 
 @Injectable()
 export class OrdersService implements IOrdersService {
-  constructor(
-    // Kita tidak butuh @InjectRepository atau DataSource lagi di sini!
-    // Kita cuma butuh Custom Repository kita.
-    private readonly ordersRepository: OrdersRepository,
-  ) {}
+  constructor(private readonly ordersRepository: OrdersRepository) {}
 
   async create(createOrderDto: CreateOrderDto, user: User): Promise<Order> {
-    // Service cuma delegasi tugas: "Eh Repo, tolong urus transaksi ini"
     return this.ordersRepository.createOrderWithTransaction(
       createOrderDto,
       user,
     );
+  }
+
+  async findOne(id: string): Promise<Order> {
+    const order = await this.ordersRepository.findById(id);
+    if (!order)
+      throw new NotFoundException(`Pesanan dengan ID ${id} tidak ketemu, Bos!`);
+    return order;
   }
 
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
@@ -30,7 +32,6 @@ export class OrdersService implements IOrdersService {
     return this.ordersRepository.findAllOrders();
   }
 
-  // Tambahkan ini:
   async findMyOrders(userId: string): Promise<Order[]> {
     return this.ordersRepository.findOrdersByUser(userId);
   }

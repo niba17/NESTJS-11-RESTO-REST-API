@@ -7,10 +7,11 @@ import {
   IsOptional,
   MaxLength,
 } from 'class-validator';
-import { Type } from 'class-transformer'; // 1. Tambah import ini
+import { Type } from 'class-transformer';
+import { Category } from '../entities/menu.entity'; // Import Enum asli
 
 export class CreateMenuDto {
-  @IsNotEmpty({ message: 'Name field required' })
+  @IsNotEmpty({ message: 'Nama menu jangan kosong, Bos!' })
   @IsString()
   @MaxLength(100)
   name: string;
@@ -19,19 +20,19 @@ export class CreateMenuDto {
   @IsString()
   description?: string;
 
-  @IsNotEmpty({ message: 'Price field required' })
-  @Type(() => Number) // 2. Paksa konversi string ke number
-  @IsNumber({}, { message: 'Price field must be a number' })
-  @Min(0, { message: 'min price is 0' })
+  @IsNotEmpty({ message: 'Harga harus diisi, Bos!' })
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Harga harus berupa angka ya!' })
+  @Min(0, { message: 'Harga minimal 0, Bos!' })
   price: number;
 
-  @IsNotEmpty()
-  @IsEnum(['FOOD', 'DRINK'])
-  category: string;
+  @IsNotEmpty({ message: 'Kategori wajib dipilih, Bos!' })
+  @IsEnum(Category, { message: 'Kategori cuma bisa FOOD atau DRINK' })
+  category: Category;
 
-  @IsNotEmpty({ message: 'Stock field required' })
-  @Type(() => Number) // 3. Paksa konversi string ke number
-  @IsNumber({}, { message: 'Stok field must be a number' })
-  @Min(0, { message: 'Stock value must be at least 0' })
+  @IsNotEmpty({ message: 'Stok awal jangan lupa diisi, Bos!' })
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Stok harus berupa angka!' })
+  @Min(0, { message: 'Stok minimal 0' })
   stock: number;
 }

@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-import { join } from 'path';
 import {
   ConflictException,
   Injectable,
@@ -8,17 +6,21 @@ import {
 import { Menu } from './entities/menu.entity';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
-import { MenuRepository } from './menu.repository'; // Import ini
+import { MenuRepository } from './menu.repository';
+import { IMenuService } from './interfaces/menu-service.interface'; // Import Interface
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
-export class MenuService {
-  constructor(private readonly menuRepository: MenuRepository) {} // Inject Repo kita
+export class MenuService implements IMenuService {
+  constructor(private readonly menuRepository: MenuRepository) {}
 
   async create(createMenuDto: CreateMenuDto, imagePath: string): Promise<Menu> {
     const existingMenu = await this.menuRepository.findByName(
       createMenuDto.name,
     );
-    if (existingMenu) throw new ConflictException('Name has been used');
+    if (existingMenu)
+      throw new ConflictException('Nama menu ini sudah ada, Bos!');
 
     return this.menuRepository.save({
       ...createMenuDto,
@@ -32,7 +34,8 @@ export class MenuService {
 
   async findOne(id: string): Promise<Menu> {
     const menu = await this.menuRepository.findById(id);
-    if (!menu) throw new NotFoundException(`Menu not found`);
+    if (!menu)
+      throw new NotFoundException(`Menu dengan ID ${id} nggak ketemu, Bos!`);
     return menu;
   }
 
@@ -52,7 +55,7 @@ export class MenuService {
     }
 
     const dataToUpdate = { ...updateMenuDto };
-    delete dataToUpdate.image;
+    delete dataToUpdate.image; // Hapus field image agar tidak mengganggu mapping
     Object.assign(menu, dataToUpdate);
 
     return this.menuRepository.save(menu);
@@ -64,7 +67,6 @@ export class MenuService {
     await this.menuRepository.delete(menu);
   }
 
-  // Helper private agar kode lebih bersih
   private removeImageFile(path: string | null) {
     if (path) {
       const fullPath = join(process.cwd(), path);
