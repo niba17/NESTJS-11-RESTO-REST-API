@@ -73,10 +73,17 @@ export class MenuService implements IMenuService {
     return menu;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const menu = await this.findOne(id);
+
+    // 1. Hapus file fisik
     this.removeImageFile(menu.image);
+
+    // 2. Hapus data di database
     await this.menuRepository.delete(menu);
+
+    // 3. Kembalikan pesan sukses
+    return { message: 'Menu deleted successfully, Bos!' };
   }
 
   // --- PRIVATE HELPERS (Logic Bisnis File) ---

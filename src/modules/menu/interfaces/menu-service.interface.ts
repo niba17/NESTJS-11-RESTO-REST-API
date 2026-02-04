@@ -14,5 +14,5 @@ export interface IMenuService {
     updateMenuDto: UpdateMenuDto,
     file?: Express.Multer.File,
   ): Promise<Menu>;
-  remove(id: string): Promise<void>;
+  remove(id: string): Promise<{ message: string }>;
 }

@@ -5,14 +5,12 @@ import {
   Delete,
   Body,
   Param,
-  UseInterceptors,
   UploadedFile,
   UseGuards,
   Patch,
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
@@ -20,8 +18,8 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
-import { fileUploadConfig } from './config/multer.config';
-import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { UseMenuImageUpload } from './decorators/menu-upload.decorator';
+import { GetMenuQueryDto } from './dto/get-menu-query.dto';
 
 @Controller('menu')
 export class MenuController {
@@ -30,8 +28,7 @@ export class MenuController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  // Tambahkan as MulterOptions jika ESLint masih cerewet
-  @UseInterceptors(FileInterceptor('image', fileUploadConfig as MulterOptions))
+  @UseMenuImageUpload()
   async create(
     @UploadedFile() file: Express.Multer.File | undefined,
     @Body() createMenuDto: CreateMenuDto,
@@ -42,7 +39,7 @@ export class MenuController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  @UseInterceptors(FileInterceptor('image', fileUploadConfig as MulterOptions))
+  @UseMenuImageUpload()
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File | undefined,
@@ -52,11 +49,8 @@ export class MenuController {
   }
 
   @Get()
-  async findAll(
-    @Query('search') search?: string,
-    @Query('category') category?: string,
-  ) {
-    return this.menuService.findAll(search, category);
+  async findAll(@Query() query: GetMenuQueryDto) {
+    return this.menuService.findAll(query.search, query.category);
   }
 
   @Get(':id')
@@ -68,7 +62,6 @@ export class MenuController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    await this.menuService.remove(id);
-    return { message: 'Menu deleted successfully' };
+    return this.menuService.remove(id);
   }
 }

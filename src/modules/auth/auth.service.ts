@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -18,27 +17,32 @@ export class AuthService implements IAuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<User> {
-    // FIX: Ubah dari findOne ke findOneByUsername sesuai Interface IUsersService
+  async register(
+    registerDto: RegisterDto,
+  ): Promise<{ message: string; user: User }> {
     const existingUser = await this.usersService.findOneByUsername(
       registerDto.username,
     );
-
     if (existingUser) {
       throw new ConflictException('Username sudah dipakai orang lain, Bos!');
     }
 
-    return this.usersService.create(registerDto.username, registerDto.password);
+    const user = await this.usersService.create(
+      registerDto.username,
+      registerDto.password,
+    );
+    return {
+      message: 'Registrasi berhasil, selamat datang di tim, Bos!',
+      user,
+    };
   }
 
   async login(
     username: string,
     pass: string,
-  ): Promise<{ access_token: string }> {
-    // 1. Ambil user beserta password-nya (Method khusus Repository)
+  ): Promise<{ message: string; access_token: string }> {
     const user = await this.usersService.findOneWithPassword(username);
 
-    // 2. Validasi Kredensial
     if (
       !user ||
       !user.password ||
@@ -47,28 +51,15 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Kredensial salah, bos!');
     }
 
-    // 3. Generate Token
-    const payload = {
-      username: user.username,
-      sub: user.id,
-      role: user.role,
-    };
+    const payload = { username: user.username, sub: user.id, role: user.role };
 
     return {
+      message: 'Login sukses, selamat bekerja Bos!',
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async getProfile(userId: string): Promise<User | null> {
-    const user = await this.usersService.findById(userId);
-
-    // Standarisasi: Jangan biarkan mengembalikan null, lempar Exception!
-    if (!user) {
-      throw new NotFoundException(
-        'Akun Bos tidak ditemukan, silakan login ulang.',
-      );
-    }
-
-    return user;
+  async getProfile(userId: string): Promise<User> {
+    return this.usersService.findById(userId); // Logika NotFound sudah ada di UsersService.findById
   }
 }

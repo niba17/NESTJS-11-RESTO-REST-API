@@ -55,9 +55,18 @@ export class UsersService implements OnModuleInit, IUsersService {
     return this.usersRepository.findAll();
   }
 
-  async updateRole(id: string, role: Role): Promise<User> {
-    const user = await this.findById(id); // Sudah menghandle throw NotFoundException
+  async updateRole(
+    id: string,
+    role: Role,
+  ): Promise<{ message: string; user: User }> {
+    const user = await this.findById(id); // Otomatis throw error jika tidak ada
+
     user.role = role;
-    return this.usersRepository.save(user);
+    const updatedUser = await this.usersRepository.save(user);
+
+    return {
+      message: `Role user ${user.username} berhasil diubah menjadi ${role}, Bos!`,
+      user: updatedUser,
+    };
   }
 }

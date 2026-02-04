@@ -4,8 +4,9 @@ import { Role } from '../../../common/enums/role.enum';
 export interface IUsersService {
   create(username: string, pass: string): Promise<User>;
   findAll(): Promise<User[]>;
-  findById(id: string): Promise<User>; // Mengembalikan User atau throw error
+  findById(id: string): Promise<User>;
   findOneByUsername(username: string): Promise<User | null>;
   findOneWithPassword(username: string): Promise<User | null>;
-  updateRole(id: string, role: Role): Promise<User>;
+  // Standarisasi return type di sini, Bos!
+  updateRole(id: string, role: Role): Promise<{ message: string; user: User }>;
 }

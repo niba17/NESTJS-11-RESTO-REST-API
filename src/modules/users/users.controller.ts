@@ -28,7 +28,6 @@ export class UsersController {
   @Get(':id')
   @Roles(Role.SUPER_ADMIN)
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    // Logika NotFound sudah ada di dalam service
     return this.usersService.findById(id);
   }
 

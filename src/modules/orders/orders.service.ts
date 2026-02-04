@@ -20,7 +20,10 @@ export class OrdersService implements IOrdersService {
     private readonly ordersRepository: OrdersRepository,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto, user: User): Promise<Order> {
+  async create(
+    createOrderDto: CreateOrderDto,
+    user: User,
+  ): Promise<{ message: string; order: Order }> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -30,7 +33,6 @@ export class OrdersService implements IOrdersService {
       const orderItems: OrderItem[] = [];
 
       for (const itemDto of createOrderDto.items) {
-        // Logika Bisnis: Cek Stok & Lock Row
         const menu = await queryRunner.manager.findOne(Menu, {
           where: { id: itemDto.menuId },
           lock: { mode: 'pessimistic_write' },
@@ -45,11 +47,9 @@ export class OrdersService implements IOrdersService {
           );
         }
 
-        // Logika Bisnis: Kurangi Stok
         menu.stock -= itemDto.quantity;
         await queryRunner.manager.save(menu);
 
-        // Buat detail item
         const orderItem = new OrderItem();
         orderItem.menu = menu;
         orderItem.quantity = itemDto.quantity;
@@ -66,9 +66,13 @@ export class OrdersService implements IOrdersService {
       order.status = OrderStatus.PENDING;
 
       const savedOrder = await queryRunner.manager.save(order);
-
       await queryRunner.commitTransaction();
-      return savedOrder;
+
+      // Kembalikan pesan sukses dan data order
+      return {
+        message: 'Order berhasil dibuat, silakan tunggu hidangan Anda, Bos!',
+        order: savedOrder,
+      };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -77,16 +81,24 @@ export class OrdersService implements IOrdersService {
     }
   }
 
+  async updateStatus(
+    id: string,
+    status: OrderStatus,
+  ): Promise<{ message: string; order: Order }> {
+    const order = await this.findOne(id);
+    order.status = status;
+    const updatedOrder = await this.ordersRepository.save(order);
+
+    return {
+      message: `Status pesanan berhasil diubah menjadi ${status}, Bos!`,
+      order: updatedOrder,
+    };
+  }
+
   async findOne(id: string): Promise<Order> {
     const order = await this.ordersRepository.findById(id);
     if (!order) throw new NotFoundException(`Order ${id} tidak ketemu, Bos!`);
     return order;
-  }
-
-  async updateStatus(id: string, status: OrderStatus): Promise<Order> {
-    const order = await this.findOne(id);
-    order.status = status;
-    return this.ordersRepository.save(order);
   }
 
   async findAll(): Promise<Order[]> {

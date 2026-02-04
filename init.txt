@@ -58,7 +58,7 @@ resto-rest-api/
 	[x] Setup Git & GitHub Repository
 	[x] Fitur Login (JWT Strategy)
 	[x] Role-based Access Control (Admin vs User)
-	[ ] Fitur Registrasi User Baru (Public) — Next Priority
+	[x] Fitur Registrasi User Baru (Public) — Next Priority
 
 2. Manajemen Menu
 	[x] CRUD Menu (Create, Read, Update, Delete)
