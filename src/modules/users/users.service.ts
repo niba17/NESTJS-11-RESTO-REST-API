@@ -22,7 +22,7 @@ export class UsersService implements OnModuleInit, IUsersService {
         password: hashedPassword,
         role: Role.SUPER_ADMIN,
       });
-      console.log('✅ Akun Super Admin berhasil dibuat: superadmin / admin123');
+      console.log('✅ Super Admin role craeted: superadmin / admin123');
     }
   }
 
@@ -42,7 +42,7 @@ export class UsersService implements OnModuleInit, IUsersService {
   async findById(id: string): Promise<User> {
     const user = await this.usersRepository.findById(id);
     if (!user) {
-      throw new NotFoundException(`User dengan ID ${id} tidak ditemukan, Bos!`);
+      throw new NotFoundException(`User with ID ${id} not found`); // English Message
     }
     return user;
   }
@@ -59,13 +59,13 @@ export class UsersService implements OnModuleInit, IUsersService {
     id: string,
     role: Role,
   ): Promise<{ message: string; user: User }> {
-    const user = await this.findById(id); // Otomatis throw error jika tidak ada
+    const user = await this.findById(id);
 
     user.role = role;
     const updatedUser = await this.usersRepository.save(user);
 
     return {
-      message: `Role user ${user.username} berhasil diubah menjadi ${role}, Bos!`,
+      message: `User ${user.username} role has been successfully updated to ${role}`, // English Message
       user: updatedUser,
     };
   }

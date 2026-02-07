@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumber,
@@ -8,31 +9,36 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Category } from '../entities/menu.entity'; // Import Enum asli
+import { Category } from '../entities/menu.entity';
 
 export class CreateMenuDto {
-  @IsNotEmpty({ message: 'Nama menu jangan kosong, Bos!' })
+  @ApiProperty({ example: 'Grilled Squid' })
+  @IsNotEmpty({ message: 'Menu name is required' })
   @IsString()
   @MaxLength(100)
   name: string;
 
+  @ApiProperty({ example: 'Delicious grilled squid', required: false })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @IsNotEmpty({ message: 'Harga harus diisi, Bos!' })
-  @Type(() => Number)
-  @IsNumber({}, { message: 'Harga harus berupa angka ya!' })
-  @Min(0, { message: 'Harga minimal 0, Bos!' })
+  @ApiProperty({ example: 45000 })
+  @IsNotEmpty({ message: 'Price is required' })
+  @Type(() => Number) // Menjamin string "45000" jadi number 45000
+  @IsNumber({}, { message: 'Price must be a number' })
+  @Min(0, { message: 'Minimum price is 0' })
   price: number;
 
-  @IsNotEmpty({ message: 'Kategori wajib dipilih, Bos!' })
-  @IsEnum(Category, { message: 'Kategori cuma bisa FOOD atau DRINK' })
+  @ApiProperty({ enum: Category, example: Category.FOOD })
+  @IsNotEmpty({ message: 'Category is required' })
+  @IsEnum(Category, { message: 'Category must be either FOOD or DRINK' })
   category: Category;
 
-  @IsNotEmpty({ message: 'Stok awal jangan lupa diisi, Bos!' })
-  @Type(() => Number)
-  @IsNumber({}, { message: 'Stok harus berupa angka!' })
-  @Min(0, { message: 'Stok minimal 0' })
+  @ApiProperty({ example: 25 })
+  @IsNotEmpty({ message: 'Initial stock is required' })
+  @Type(() => Number) // Menjamin string "25" jadi number 25
+  @IsNumber({}, { message: 'Stock must be a number' })
+  @Min(0, { message: 'Minimum stock is 0' })
   stock: number;
 }

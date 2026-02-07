@@ -17,6 +17,8 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { Role } from 'src/common/enums/role.enum';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -24,16 +26,35 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a new order' })
+  @ApiResponse({ status: 201, description: 'Order created successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Insufficient stock or validation error',
+  })
   async create(@Body() createOrderDto: CreateOrderDto, @GetUser() user: User) {
     return this.ordersService.create(createOrderDto, user);
   }
 
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update pending order items' })
+  @ApiResponse({ status: 200, description: 'Order items updated' })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @GetUser() user: User,
+  ) {
+    return this.ordersService.update(id, updateOrderDto, user.id);
+  }
+
   @Get('my')
+  @ApiOperation({ summary: 'Get current user orders history' })
   async findMyOrders(@GetUser() user: User) {
     return this.ordersService.findMyOrders(user.id);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get order details by ID' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.ordersService.findOne(id);
   }
@@ -41,6 +62,7 @@ export class OrdersController {
   @Patch(':id/status')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update order status (Admin Only)' })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
@@ -51,6 +73,7 @@ export class OrdersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all orders (Admin Only)' })
   async findAll() {
     return this.ordersService.findAll();
   }

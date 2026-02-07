@@ -25,16 +25,12 @@ export class MenuService implements IMenuService {
       createMenuDto.name,
     );
     if (existingMenu) {
-      this.handleGhostFile(file); // Hapus file yang terlanjur terupload jika gagal validasi
-      throw new ConflictException('Nama menu ini sudah ada, Bos!');
+      this.handleGhostFile(file);
+      throw new ConflictException('Menu name already exists'); // English Message
     }
 
     const imagePath = this.processFilePath(file);
-
-    return this.menuRepository.save({
-      ...createMenuDto,
-      image: imagePath,
-    });
+    return this.menuRepository.save({ ...createMenuDto, image: imagePath });
   }
 
   async update(
@@ -69,21 +65,15 @@ export class MenuService implements IMenuService {
 
   async findOne(id: string): Promise<Menu> {
     const menu = await this.menuRepository.findById(id);
-    if (!menu) throw new NotFoundException(`Menu ID ${id} tidak ketemu, Bos!`);
+    if (!menu) throw new NotFoundException(`Menu with ID ${id} not found`); // English Message
     return menu;
   }
 
   async remove(id: string): Promise<{ message: string }> {
     const menu = await this.findOne(id);
-
-    // 1. Hapus file fisik
     this.removeImageFile(menu.image);
-
-    // 2. Hapus data di database
     await this.menuRepository.delete(menu);
-
-    // 3. Kembalikan pesan sukses
-    return { message: 'Menu deleted successfully, Bos!' };
+    return { message: 'Menu deleted successfully' }; // English Message
   }
 
   // --- PRIVATE HELPERS (Logic Bisnis File) ---

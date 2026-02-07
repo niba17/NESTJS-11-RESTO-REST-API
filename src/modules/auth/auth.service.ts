@@ -24,7 +24,7 @@ export class AuthService implements IAuthService {
       registerDto.username,
     );
     if (existingUser) {
-      throw new ConflictException('Username sudah dipakai orang lain, Bos!');
+      throw new ConflictException('Username is already used');
     }
 
     const user = await this.usersService.create(
@@ -32,7 +32,7 @@ export class AuthService implements IAuthService {
       registerDto.password,
     );
     return {
-      message: 'Registrasi berhasil, selamat datang di tim, Bos!',
+      message: 'Registrasi success, welcome to the team',
       user,
     };
   }
@@ -48,13 +48,13 @@ export class AuthService implements IAuthService {
       !user.password ||
       !(await bcrypt.compare(pass, user.password))
     ) {
-      throw new UnauthorizedException('Kredensial salah, bos!');
+      throw new UnauthorizedException('Inavlid credentials');
     }
 
     const payload = { username: user.username, sub: user.id, role: user.role };
 
     return {
-      message: 'Login sukses, selamat bekerja Bos!',
+      message: 'Login success',
       access_token: this.jwtService.sign(payload),
     };
   }

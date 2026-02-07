@@ -1,10 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 
 export class UpdateUserRoleDto {
-  @IsNotEmpty()
-  @IsEnum(Role, {
-    message: 'Role harus berupa USER, ADMIN, atau SUPER_ADMIN ya, Bos!',
+  @ApiProperty({
+    enum: Role,
+    example: Role.ADMIN,
+    description: 'The new role to be assigned to the user',
   })
+  @IsNotEmpty({ message: 'Role is required' })
+  @IsEnum(Role, { message: 'Invalid role type' })
   role: Role;
 }

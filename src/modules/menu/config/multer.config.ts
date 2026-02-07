@@ -15,9 +15,7 @@ export const fileUploadConfig: MulterOptions = {
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
       return cb(
-        new BadRequestException(
-          'Hanya file jpg, jpeg, png, & webp yang diizinkan, Bos!',
-        ),
+        new BadRequestException('Only jpg, jpeg, png, & webp file allowed'),
         false,
       );
     }
